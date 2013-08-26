@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 require 'singleton'
 require 'logging'
+require 'ruby-prof'
+require 'rails_config'
 
 module RubyProfHelper
 
