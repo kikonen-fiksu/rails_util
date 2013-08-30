@@ -1,13 +1,12 @@
-require "ruby_prof_helper/version"
-require "ruby_prof_helper/profile"
+require_relative 'ruby_prof_profiler'
 
-module RubyProfHelper
+module Profiler
   #
   # profile &block
   #
   def self.profile(file_name)
     result = nil
-    prof = Profile.instance
+    prof = RubyProfProfiler.instance
     if prof.enabled?
       prof.start
       begin

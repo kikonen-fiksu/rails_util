@@ -4,14 +4,14 @@ require 'logging'
 require 'ruby-prof'
 require 'rails_config'
 
-module RubyProfHelper
+module Profiler
 
 #
 # TODO KI make gem out of this...
 #
 # @see https://github.com/ruby-prof/ruby-prof
 #
-class Profile
+class RubyProfProfiler
   ROOT_DIR = '/tmp'
 
   LOG = Logging.logger['Profile']
