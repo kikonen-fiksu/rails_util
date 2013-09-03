@@ -29,4 +29,5 @@ end
 # USAGE:
 #   Log.ndc :name { block }
 #   Log.backtrace
+Log.init
 ```
