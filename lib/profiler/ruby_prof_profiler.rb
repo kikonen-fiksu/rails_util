@@ -15,9 +15,9 @@ class RubyProfProfiler
     enabled: true,
     cpu: false,
     memory: false,
-    min_percent: 10.0,
+    min_percent: 5.0,
     min_profile_time: 10,
-    output: :graph
+    output: [:graph, :dot]
   }.freeze
 
   include Singleton
@@ -36,8 +36,7 @@ class RubyProfProfiler
     @memory = config[:memory]
     @min_percent = config[:min_percent]
     @min_profile_time = config[:min_profile_time]
-    @output = config[:output]
-    @output = @output.to_s.to_sym
+    @output = [*config[:output]].map { |e| e.to_sym }
 
     if @enabled
       @output_dir = "#{@root_dir}/#{@profile_dir}"
@@ -103,22 +102,35 @@ class RubyProfProfiler
 
     #      results.eliminate_methods!([/ProfileHelper/])
 
-    if @output == :graph
+    if @output.include?(:graph)
       File.open "#{base_name}-graph.html", 'w' do |file|
         logger.info "Saving: #{file.path}"
         RubyProf::GraphHtmlPrinter.new(results).print file, min_percent: @min_percent
       end
-    elsif @output == :call_stack
+    end
+
+    if @output.include?(:dot)
+      File.open "#{base_name}.dot", 'w' do |file|
+        logger.info "Saving: #{file.path}"
+        RubyProf::DotPrinter.new(results).print file, min_percent: @min_percent
+      end
+    end
+
+    if @output.include?(:call_stack)
       File.open "#{base_name}-stack.html", 'w' do |file|
         logger.info "Saving: #{file}"
         RubyProf::CallStackPrinter.new(results).print file, min_percent: @min_percent
       end
-    elsif @profile == :flat
+    end
+
+    if @output.include?(:flat)
       File.open "#{base_name}-flat.txt", 'w' do |file|
         logger.info "Saving: #{file}"
         RubyProf::FlatPrinter.new(results).print file, min_percent: @min_percent
       end
-    elsif @profile == :call_tree
+    end
+
+    if @output.include?(:call_tree)
       File.open "#{base_name}-tree.prof", 'w' do |file|
         logger.info "Saving: #{file}"
         RubyProf::CallTreePrinter.new(results).print file, min_percent: @min_percent
