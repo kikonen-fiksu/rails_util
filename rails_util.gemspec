@@ -22,6 +22,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake"
 
   spec.add_dependency 'ruby-prof'
-  spec.add_dependency 'rails_config'
   spec.add_dependency 'logging'
 end

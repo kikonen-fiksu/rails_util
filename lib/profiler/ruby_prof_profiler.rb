@@ -10,7 +10,6 @@ module Profiler
 #
 class RubyProfProfiler
   DEFAULT_CONFIG = {
-    root_dir: '.',
     profile_dir: 'log/profile',
     enabled: true,
     cpu: false,
@@ -19,8 +18,6 @@ class RubyProfProfiler
     min_profile_time: 10,
     output: :graph
   }.freeze
-
-  ROOT_DIR = '/tmp'
 
   include Singleton
 
@@ -31,7 +28,7 @@ class RubyProfProfiler
 
     config = @@config
     @enabled = config[:enabled]
-    @root_dir = config[:root_dir]
+    @root_dir = RailsUtil.config[:root_dir]
     @profile_dir = config[:profile_dir]
 
     @cpu = config[:cpu]
