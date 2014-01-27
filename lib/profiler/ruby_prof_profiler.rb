@@ -95,6 +95,10 @@ class RubyProfProfiler
       return
     end
 
+    # ensure name is safe
+    file_name = file_name
+      .gsub(/^.*(\\|\/)/, '')
+      .gsub!(/[^0-9A-Za-z.\-]/, '_')
     base_name = full_file(file_name)
 
     #      results.eliminate_methods!([/ProfileHelper/])
