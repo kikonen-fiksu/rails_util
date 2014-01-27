@@ -1,17 +1,24 @@
-# -*- coding: utf-8 -*-
 require 'singleton'
 require 'logging'
 require 'ruby-prof'
-require 'rails_config'
 
 module Profiler
-
 #
 # TODO KI make gem out of this...
 #
 # @see https://github.com/ruby-prof/ruby-prof
 #
 class RubyProfProfiler
+  DEFAULT_CONFIG = {
+    root_dir: '.',
+    profile_dir: 'log/profile',
+    enabled: true,
+    cpu: false,
+    memory: false,
+    min_percent: 10.0,
+    output: :graph
+  }.freeze
+
   ROOT_DIR = '/tmp'
 
   LOG = Logging.logger['Profile']
@@ -21,29 +28,23 @@ class RubyProfProfiler
   def initialize
     @file_index = 0
 
-    @enabled = true
-    @profile_dir = '#{Rails.root}/log/profile'
-    @min_percent = 10.0
-    @cpu = true
-    @memory = false
-    @output = :graph
+    @output_dir = nil
 
-    prof = Settings.prof
-    if prof
-      @enabled = prof.enabled || @enabled
-      @profile_dir = prof.profile_dir || @profile_dir
+    config = @@config
+    @enabled = config[:enabled]
+    @root_dir = config[:root_dir]
+    @profile_dir = config[:profile_dir]
 
-      @cpu = prof.cpu || @cpu
-      @memory = prof.memory || @memory
-      @min_percent = prof.min_percent || @min_percent
-      @output = prof.output || @output
-      @output = @output.to_s.to_sym
-    end
+    @cpu = config[:cpu]
+    @memory = config[:memory]
+    @min_percent = config[:min_percent]
+    @output = config[:output]
+    @output = @output.to_s.to_sym
 
     if @enabled
-      @profile_dir = eval('"' + @profile_dir + '"')
-      unless Dir.exist? @profile_dir
-        Dir.mkdir @profile_dir
+      @output_dir = "#{@root_dir}/#{@profile_dir}")
+      unless Dir.exist? @output_dir
+        Dir.mkdir @output_dir
       end
 
       if @memory
@@ -59,12 +60,16 @@ class RubyProfProfiler
     @enabled
   end
 
+  def self.set_config(config = {})
+    @@config = DEFAULT_CONFIG.merge(config)
+  end
+
   #
   # @return profile file residing in profiling dir
   #
   def full_file(file_name)
     @file_index += 1
-    File.join @profile_dir, "#{DateTime.now.strftime '%Y%m%d_%H%M'}_#{'%04d' % @file_index}_#{file_name}"
+    File.join @output_dir, "#{DateTime.now.strftime '%Y%m%d_%H%M'}_#{'%04d' % @file_index}_#{file_name}"
   end
 
   def start
@@ -73,6 +78,7 @@ class RubyProfProfiler
 
   def end(file_name)
     base_name = full_file(file_name)
+
     results = RubyProf.stop
     #      results.eliminate_methods!([/ProfileHelper/])
 
@@ -100,4 +106,5 @@ class RubyProfProfiler
   end
 end
 
+RubyProfProfiler.set_config
 end
