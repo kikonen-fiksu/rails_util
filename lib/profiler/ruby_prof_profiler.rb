@@ -78,11 +78,13 @@ class RubyProfProfiler
   end
 
   def start
+    return unless @enabled
     RubyProf.start
     @profile_start_time = Time.now
   end
 
   def end(file_name)
+    return unless @enabled
     results = RubyProf.stop
 
     profile_start_time = @profile_start_time
