@@ -10,6 +10,7 @@ module Profiler
 #
 class RubyProfProfiler
   DEFAULT_CONFIG = {
+    root_dir: '.',
     profile_dir: 'log/profile',
     enabled: true,
     cpu: false,
@@ -28,7 +29,7 @@ class RubyProfProfiler
 
     config = @@config
     @enabled = config[:enabled]
-    @root_dir = RailsUtil.config[:root_dir]
+    @root_dir = config[:root_dir]
     @profile_dir = config[:profile_dir]
 
     @cpu = config[:cpu]
