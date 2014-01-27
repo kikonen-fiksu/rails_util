@@ -42,7 +42,7 @@ class RubyProfProfiler
     @output = @output.to_s.to_sym
 
     if @enabled
-      @output_dir = "#{@root_dir}/#{@profile_dir}")
+      @output_dir = "#{@root_dir}/#{@profile_dir}"
       unless Dir.exist? @output_dir
         Dir.mkdir @output_dir
       end

@@ -1,6 +1,18 @@
 require_relative 'ruby_prof_profiler'
 
 module Profiler
+  def self.set_config(config = {})
+    RubyProfProfiler.set_config(config)
+  end
+
+  def self.start
+    RubyProfProfiler.instance.start
+  end
+
+  def self.end(file_name)
+    RubyProfProfiler.instance.end(file_name)
+  end
+
   #
   # profile &block
   #
