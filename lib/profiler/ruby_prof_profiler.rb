@@ -16,12 +16,11 @@ class RubyProfProfiler
     cpu: false,
     memory: false,
     min_percent: 10.0,
+    min_profile_time: 10,
     output: :graph
   }.freeze
 
   ROOT_DIR = '/tmp'
-
-  LOG = Logging.logger['Profile']
 
   include Singleton
 
@@ -38,6 +37,7 @@ class RubyProfProfiler
     @cpu = config[:cpu]
     @memory = config[:memory]
     @min_percent = config[:min_percent]
+    @min_profile_time = config[:min_profile_time]
     @output = config[:output]
     @output = @output.to_s.to_sym
 
@@ -55,6 +55,11 @@ class RubyProfProfiler
       end
     end
   end
+
+  def logger
+    @logger ||= Logging.logger['Profile']
+  end
+
 
   def enabled?
     @enabled
@@ -74,32 +79,44 @@ class RubyProfProfiler
 
   def start
     RubyProf.start
+    @profile_start_time = Time.now
   end
 
   def end(file_name)
+    results = RubyProf.stop
+
+    profile_start_time = @profile_start_time
+    @profile_start_time = nil
+    profile_end_time = Time.now
+
+    diff = profile_end_time - profile_start_time
+    if diff < @min_profile_time
+      logger.info "skipping: too_short_time, file=#{file_name}, time=#{diff}s, min=#{@min_profile_time}s"
+      return
+    end
+
     base_name = full_file(file_name)
 
-    results = RubyProf.stop
     #      results.eliminate_methods!([/ProfileHelper/])
 
     if @output == :graph
       File.open "#{base_name}-graph.html", 'w' do |file|
-        LOG.info "Saving: #{file.path}"
+        logger.info "Saving: #{file.path}"
         RubyProf::GraphHtmlPrinter.new(results).print file, min_percent: @min_percent
       end
     elsif @output == :call_stack
       File.open "#{base_name}-stack.html", 'w' do |file|
-        LOG.info "Saving: #{file}"
+        logger.info "Saving: #{file}"
         RubyProf::CallStackPrinter.new(results).print file, min_percent: @min_percent
       end
     elsif @profile == :flat
       File.open "#{base_name}-flat.txt", 'w' do |file|
-        LOG.info "Saving: #{file}"
+        logger.info "Saving: #{file}"
         RubyProf::FlatPrinter.new(results).print file, min_percent: @min_percent
       end
     elsif @profile == :call_tree
       File.open "#{base_name}-tree.prof", 'w' do |file|
-        LOG.info "Saving: #{file}"
+        logger.info "Saving: #{file}"
         RubyProf::CallTreePrinter.new(results).print file, min_percent: @min_percent
       end
     end
